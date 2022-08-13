@@ -4,7 +4,7 @@ import * as crypto from "crypto";
 
 @Injectable()
 export class RegistrationService {
-	private readonly states: StateData[] = [];
+	private states: StateData[] = [];
 
 	/**
 	 *	Fetch the data associated to a state.
@@ -39,5 +39,13 @@ export class RegistrationService {
 			}
 		};
 		return data;
+	}
+
+	/**
+	 *  Delete the data associated to a generated state.
+	 *	@param {string} state The state to delete.
+	 */
+	deleteStateData(state: string) {
+		this.states = this.states.filter(data => data.state != state);
 	}
 }

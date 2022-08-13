@@ -129,4 +129,33 @@ describe('RegistrationService', () => {
 			expect(ret.access_token).toHaveProperty('ft', null)
 		});
 	})
+
+	describe('deleteStateData', () => {
+		it('should delete only the state\'s data', () => {
+			service.setStateData({
+				state: mock_state + '0',
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			service.setStateData({
+				state: mock_state + '1',
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			service.deleteStateData(mock_state);
+			expect(service.fetchStateData(mock_state + '0')).not.toBeNull();
+			expect(service.fetchStateData(mock_state + '1')).not.toBeNull();
+		});
+	});
 });
