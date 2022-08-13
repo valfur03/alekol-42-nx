@@ -1,4 +1,4 @@
-import { Controller, GatewayTimeoutException, Get, Param, Redirect } from '@nestjs/common';
+import { BadRequestException, Controller, GatewayTimeoutException, Get, Param, Redirect } from '@nestjs/common';
 import configuration from '../conf/configuration';
 import { RegistrationService } from '../registration/registration.service';
 import { StateData } from './interfaces/state-data.interface';
@@ -13,8 +13,10 @@ export class AuthController {
 	@Redirect()
 	register(@Param('state') state: string) {
 		let data: StateData | null = null;
-		if (state) data = this.registrationService.fetchStateData(state);
-		else {
+		if (state) {
+			data = this.registrationService.fetchStateData(state);
+			if (data === null) throw new BadRequestException();
+		} else {
 			let i = 0;
 			while (data === null) {
 				if (i++ >= MAX_ITERATIONS) throw new GatewayTimeoutException();

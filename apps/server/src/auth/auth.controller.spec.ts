@@ -6,7 +6,7 @@ import { RegistrationService } from '../registration/registration.service';
 process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18)
 import configuration from '../conf/configuration';
-import {GatewayTimeoutException} from '@nestjs/common';
+import {BadRequestException, GatewayTimeoutException} from '@nestjs/common';
 
 const mock_state = faker.random.alphaNumeric(30);
 const mock_access_token = faker.random.alphaNumeric(30);
@@ -137,6 +137,14 @@ describe('AuthController', () => {
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				expect(controller.register(mock_state)).toStrictEqual({ url: FE_URL });
+			});
+		});
+
+		describe('when the state parameter is invalid', () => {
+			it('should throw BadRequestException', () => {
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => null);
+				expect(() => controller.register(mock_state)).toThrow(BadRequestException);
 			});
 		});
 	});
