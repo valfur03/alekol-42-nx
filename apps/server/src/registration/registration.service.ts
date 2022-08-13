@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StateData } from '../auth/interfaces/state-data.interface';
+import * as crypto from "crypto";
 
 @Injectable()
 export class RegistrationService {
@@ -22,6 +23,21 @@ export class RegistrationService {
 	setStateData(data: StateData): StateData | null {
 		if (this.fetchStateData(data.state) !== null) return null;
 		this.states.push(data);
+		return data;
+	}
+
+	/**
+	 *  Initialize data associated to a generated state.
+	 *  @return {StateData} The newly created data.
+	 */
+	initStateData(): StateData {
+		const data: StateData = {
+			state: crypto.randomBytes(16).toString("hex"),
+			access_token: {
+				discord: null,
+				ft: null,
+			}
+		};
 		return data;
 	}
 }

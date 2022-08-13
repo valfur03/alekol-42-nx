@@ -114,4 +114,19 @@ describe('RegistrationService', () => {
 			expect(ret).toBeNull();
 		});
 	});
+
+	describe('initStateData', () => {
+		it('should generate an unique state', () => {
+			const ret1 = service.initStateData();
+			const ret2 = service.initStateData();
+			expect(ret1.state).not.toBe(ret2.state);
+		});
+
+		it('should initialize acces tokens to null', () => {
+			const ret = service.initStateData();
+			expect(ret).toHaveProperty('access_token')
+			expect(ret.access_token).toHaveProperty('discord', null)
+			expect(ret.access_token).toHaveProperty('ft', null)
+		});
+	})
 });

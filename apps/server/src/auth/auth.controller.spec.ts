@@ -6,6 +6,7 @@ import { RegistrationService } from '../registration/registration.service';
 process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18)
 import configuration from '../conf/configuration';
+import {GatewayTimeoutException} from '@nestjs/common';
 
 const mock_state = faker.random.alphaNumeric(30);
 const mock_access_token = faker.random.alphaNumeric(30);
@@ -34,6 +35,54 @@ describe('AuthController', () => {
 
 	describe('register', () => {
 		describe('when the state parameter is not provided', () => {
+			it('should create the data using the initStateData method', () => {
+				const mock_state_data = {
+					state: mock_state,
+					access_token: {
+						discord: null,
+						ft: null,
+					},
+				};
+				jest.spyOn(registrationService, 'initStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => mock_state_data);
+				controller.register(undefined);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+			});
+
+			it('should try until the state it eventually unique', () => {
+				const mock_state_data = {
+					state: mock_state,
+					access_token: {
+						discord: null,
+						ft: null,
+					},
+				};
+				jest.spyOn(registrationService, 'initStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => mock_state_data)
+					.mockImplementationOnce(() => null);
+				controller.register(undefined);
+				expect(spy).toHaveBeenCalledTimes(2);
+			});
+
+			it('should not iterate more than n times', () => {
+				const mock_state_data = {
+					state: mock_state,
+					access_token: {
+						discord: null,
+						ft: null,
+					},
+				};
+				jest.spyOn(registrationService, 'initStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => null);
+				expect(() => controller.register(undefined)).toThrow(GatewayTimeoutException);
+				expect(spy).toHaveBeenCalledTimes(20);
+			});
 		})
 
 		describe('when the state parameter is provided', () => {
