@@ -21,12 +21,97 @@ describe('RegistrationService', () => {
 	});
 	
 	describe('fetchStateData(state)', () => {
-		it('return the state\'s data', () => {
-			expect(service.fetchStateData(mock_state)).toHaveProperty('state', mock_state);
+		it('should return the state\'s data', () => {
+			service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			const ret = service.fetchStateData(mock_state);
+			expect(ret).toHaveProperty('state', mock_state);
+			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+		});
+
+		it('should return the state\'s data (with multiple entries)', () => {
+			service.setStateData({
+				state: mock_state + '0',
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			service.setStateData({
+				state: mock_state + '1',
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			const ret = service.fetchStateData(mock_state);
+			expect(ret).toHaveProperty('state', mock_state);
+			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+		});
+
+		it('should return null', () => {
+			expect(service.fetchStateData(mock_state)).toBeNull();
 		});
 
 //		it('should fetch from the database', () => {
 //			service.fetchStateData(mock_state);
 //		})
+	});
+	
+	describe('setStateData(state)', () => {
+		it('should return the state\'s data', () => {
+			const ret = service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			expect(ret).toHaveProperty('state', mock_state);
+			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+		});
+
+		it('should push the state\'s data', () => {
+			service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			const ret = service.fetchStateData(mock_state);
+			expect(ret).toHaveProperty('state', mock_state);
+			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+		});
+
+		it('should not duplicate entries', () => {
+			service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			const ret = service.setStateData({
+				state: mock_state,
+				access_token: {
+					discord: null,
+					ft: null,
+				},
+			});
+			expect(ret).toBeNull();
+		});
 	});
 });
