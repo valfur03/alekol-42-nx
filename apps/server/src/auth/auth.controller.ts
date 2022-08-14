@@ -5,11 +5,11 @@ import { StateData } from './interfaces/state-data.interface';
 
 const MAX_ITERATIONS = 20;
 
-@Controller('auth/register')
+@Controller('auth')
 export class AuthController {
 	constructor(private registrationService: RegistrationService) {}
 
-	@Get()
+	@Get('register')
 	@Redirect()
 	register(@Param('state') state: string) {
 		let data: StateData | null = null;
@@ -23,8 +23,8 @@ export class AuthController {
 				data = this.registrationService.setStateData(this.registrationService.initStateData());
 			}
 		}
-		if (data.access_token.ft === null) return { url: configuration().ft.authorization_url(state) };
-		else if (data.access_token.discord === null) return { url: configuration().discord.authorization_url(state) };
+		if (data.ft_login === null || data.ft_id === null) return { url: configuration().ft.authorization_url(state) };
+		else if (data.discord_id === null) return { url: configuration().discord.authorization_url(state) };
 		return { url: configuration().front_end.url };
 	}
 }

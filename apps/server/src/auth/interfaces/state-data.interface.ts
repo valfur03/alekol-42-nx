@@ -1,9 +1,7 @@
-interface AccessTokenCollection {
-	discord: string | null;
-	ft: string | null;
-}
-
 export interface StateData {
 	state: string;
-	access_token: AccessTokenCollection;
+	ft_id: string | null;
+	ft_login: string | null;
+	discord_id: string | null;
+	discord_guilds_id: string[];
 }

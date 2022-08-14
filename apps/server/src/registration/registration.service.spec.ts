@@ -4,6 +4,14 @@ import { RegistrationService } from './registration.service';
 import { StateData } from '../auth/interfaces/state-data.interface';
 
 const mock_state = faker.datatype.uuid();
+const mock_ft_id: string = faker.random.numeric(5);
+const mock_ft_login: string = faker.internet.userName();
+const mock_discord_id: string = faker.random.numeric(18);
+const mock_discord_guilds_id: string[] = [
+	faker.random.numeric(18),
+	faker.random.numeric(18),
+	faker.random.numeric(18),
+];
 
 describe('RegistrationService', () => {
 	let service: RegistrationService;
@@ -24,41 +32,47 @@ describe('RegistrationService', () => {
 		it('should return the state\'s data', () => {
 			service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			const ret = service.fetchStateData(mock_state);
 			expect(ret).toHaveProperty('state', mock_state);
-			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+			expect(ret).toHaveProperty('ft_id', mock_ft_id);
+			expect(ret).toHaveProperty('ft_login', mock_ft_login);
+			expect(ret).toHaveProperty('discord_id', mock_discord_id);
+			expect(ret).toHaveProperty('discord_guilds_id', mock_discord_guilds_id);
 		});
 
 		it('should return the state\'s data (with multiple entries)', () => {
 			service.setStateData({
 				state: mock_state + '0',
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			service.setStateData({
 				state: mock_state + '1',
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			const ret = service.fetchStateData(mock_state);
 			expect(ret).toHaveProperty('state', mock_state);
-			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+			expect(ret).toHaveProperty('ft_id', mock_ft_id);
+			expect(ret).toHaveProperty('ft_login', mock_ft_login);
+			expect(ret).toHaveProperty('discord_id', mock_discord_id);
+			expect(ret).toHaveProperty('discord_guilds_id', mock_discord_guilds_id);
 		});
 
 		it('should return null', () => {
@@ -74,42 +88,48 @@ describe('RegistrationService', () => {
 		it('should return the state\'s data', () => {
 			const ret = service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			expect(ret).toHaveProperty('state', mock_state);
-			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+			expect(ret).toHaveProperty('ft_id', mock_ft_id);
+			expect(ret).toHaveProperty('ft_login', mock_ft_login);
+			expect(ret).toHaveProperty('discord_id', mock_discord_id);
+			expect(ret).toHaveProperty('discord_guilds_id', mock_discord_guilds_id);
 		});
 
 		it('should push the state\'s data', () => {
 			service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: mock_ft_id,
+				ft_login: mock_ft_login,
+				discord_id: mock_discord_id,
+				discord_guilds_id: mock_discord_guilds_id,
 			});
 			const ret = service.fetchStateData(mock_state);
 			expect(ret).toHaveProperty('state', mock_state);
-			expect(ret).toHaveProperty('access_token', { discord: null, ft: null });
+			expect(ret).toHaveProperty('ft_id', mock_ft_id);
+			expect(ret).toHaveProperty('ft_login', mock_ft_login);
+			expect(ret).toHaveProperty('discord_id', mock_discord_id);
+			expect(ret).toHaveProperty('discord_guilds_id', mock_discord_guilds_id);
 		});
 
 		it('should not duplicate entries', () => {
 			service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: null,
+				ft_login: null,
+				discord_id: null,
+				discord_guilds_id: [],
 			});
 			const ret = service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: null,
+				ft_login: null,
+				discord_id: null,
+				discord_guilds_id: [],
 			});
 			expect(ret).toBeNull();
 		});
@@ -122,11 +142,12 @@ describe('RegistrationService', () => {
 			expect(ret1.state).not.toBe(ret2.state);
 		});
 
-		it('should initialize acces tokens to null', () => {
+		it('should initialize data to null', () => {
 			const ret = service.initStateData();
-			expect(ret).toHaveProperty('access_token')
-			expect(ret.access_token).toHaveProperty('discord', null)
-			expect(ret.access_token).toHaveProperty('ft', null)
+			expect(ret).toHaveProperty('ft_id', null);
+			expect(ret).toHaveProperty('ft_login', null);
+			expect(ret).toHaveProperty('discord_id', null);
+			expect(ret).toHaveProperty('discord_guilds_id', []);
 		});
 	})
 
@@ -134,24 +155,24 @@ describe('RegistrationService', () => {
 		it('should delete only the state\'s data', () => {
 			service.setStateData({
 				state: mock_state + '0',
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: null,
+				ft_login: null,
+				discord_id: null,
+				discord_guilds_id: [],
 			});
 			service.setStateData({
 				state: mock_state,
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: null,
+				ft_login: null,
+				discord_id: null,
+				discord_guilds_id: [],
 			});
 			service.setStateData({
 				state: mock_state + '1',
-				access_token: {
-					discord: null,
-					ft: null,
-				},
+				ft_id: null,
+				ft_login: null,
+				discord_id: null,
+				discord_guilds_id: [],
 			});
 			service.deleteStateData(mock_state);
 			expect(service.fetchStateData(mock_state + '0')).not.toBeNull();

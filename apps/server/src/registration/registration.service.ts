@@ -33,10 +33,10 @@ export class RegistrationService {
 	initStateData(): StateData {
 		const data: StateData = {
 			state: crypto.randomBytes(16).toString("hex"),
-			access_token: {
-				discord: null,
-				ft: null,
-			}
+			ft_id: null,
+			ft_login: null,
+			discord_id: null,
+			discord_guilds_id: [],
 		};
 		return data;
 	}
