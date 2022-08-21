@@ -5,3 +5,5 @@ export interface StateData {
 	discord_id: string | null;
 	discord_guilds_id: string[];
 }
+
+export type StateDataFields = keyof StateData;

@@ -1,18 +1,28 @@
 import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { RegistrationService } from '../registration/registration.service';
 import { StateData } from './interfaces/state-data.interface';
 
 process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18)
 import configuration from '../conf/configuration';
-import {BadRequestException, GatewayTimeoutException} from '@nestjs/common';
+import {BadRequestException, GatewayTimeoutException, InternalServerErrorException} from '@nestjs/common';
 
 const mock_state = faker.random.alphaNumeric(30);
 const mock_ft_id: string = faker.random.numeric(5);
 const mock_ft_login: string = faker.internet.userName();
 const mock_discord_id: string = faker.random.numeric(18);
+const mock_ft_auth: { access_token: string } = {
+	access_token: faker.random.alphaNumeric(30),
+};
+const mock_ft_user: { id: number, login: string } = {
+	id: parseInt(mock_ft_id),
+	login: mock_ft_login,
+};
+const mock_code = faker.random.alphaNumeric(30);
+const mock_ft_redirection_url: string = faker.internet.url();
 
 const DISCORD_URL = configuration().discord.authorization_url;
 const FE_URL = configuration().front_end.url;
@@ -20,15 +30,17 @@ const FT_URL = configuration().ft.authorization_url;
 
 describe('AuthController', () => {
 	let controller: AuthController;
+	let authService: AuthService;
 	let registrationService: RegistrationService;
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [AuthController],
-			providers: [RegistrationService],
+			providers: [AuthService, RegistrationService],
 		}).compile();
 
 		registrationService = module.get<RegistrationService>(RegistrationService);
+		authService = module.get<AuthService>(AuthService);
 		controller = module.get<AuthController>(AuthController);
 	});
 
@@ -103,20 +115,93 @@ describe('AuthController', () => {
 				expect(spy).toHaveBeenCalledWith(mock_state);
 			});
 
-			it("should redirect to discord", () => {
-				const mock_state_data: StateData = {
+			it('should call the getNextServiceURL function', async () => {
+				let mock_state_data: StateData = {
 					state: mock_state,
-					ft_id: mock_ft_id,
-					ft_login: mock_ft_login,
+					ft_id: null,
+					ft_login: null,
 					discord_id: null,
 					discord_guilds_id: [],
 				};
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
-				expect(controller.register(mock_state)).toStrictEqual({ url: DISCORD_URL(mock_state) });
+				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
+					.mockImplementation(() => mock_ft_redirection_url);
+				const ret = controller.register(mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+				expect(ret).toStrictEqual({ url: mock_ft_redirection_url });
+			});
+		});
+
+		describe('when the state parameter is invalid', () => {
+			it('should throw BadRequestException', () => {
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => null);
+				expect(() => controller.register(mock_state)).toThrow(BadRequestException);
+			});
+		});
+	});
+
+	describe('authWith42', () => {
+		describe('when everything is ok', () => {
+			it('should set the new state data', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'get42AccessToken')
+					.mockImplementation(() => Promise.resolve(mock_ft_auth));
+				jest.spyOn(authService, 'get42User')
+					.mockImplementation(() => Promise.resolve(mock_ft_user));
+				mock_state_data.ft_id = mock_ft_id;
+				mock_state_data.ft_login = mock_ft_login;
+				const spy = jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => mock_state_data);
+				await controller.authWith42(mock_code, mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
 			});
 
-			it("should redirect to 42", () => {
+			it('should call the getNextServiceURL function', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'get42AccessToken')
+					.mockImplementation(() => Promise.resolve(mock_ft_auth));
+				jest.spyOn(authService, 'get42User')
+					.mockImplementation(() => Promise.resolve(mock_ft_user));
+				mock_state_data.ft_id = mock_ft_id;
+				mock_state_data.ft_login = mock_ft_login;
+				jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
+					.mockImplementation(() => mock_ft_redirection_url);
+				const ret = await controller.authWith42(mock_code, mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+				expect(ret).toStrictEqual({ url: mock_ft_redirection_url });
+			});
+		});
+
+		describe('when the state parameter is invalid', () => {
+			it('should throw BadRequestException', async () => {
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => null);
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(BadRequestException);
+			});
+		});
+
+		describe('when the access token request fails', () => {
+			it('should throw InternalServerErrorException', async () => {
 				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
@@ -126,28 +211,28 @@ describe('AuthController', () => {
 				};
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
-				expect(controller.register(mock_state)).toStrictEqual({ url: FT_URL(mock_state) });
+				jest.spyOn(authService, 'get42AccessToken')
+					.mockImplementation(() => Promise.resolve(null));
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(InternalServerErrorException);
 			});
+		});
 
-			it("should redirect to the front end", () => {
+		describe('when the user\'s data request fails', () => {
+			it('should throw InternalServerErrorException', async () => {
 				const mock_state_data: StateData = {
 					state: mock_state,
-					ft_id: mock_ft_id,
-					ft_login: mock_ft_login,
-					discord_id: mock_discord_id,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
 					discord_guilds_id: [],
 				};
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
-				expect(controller.register(mock_state)).toStrictEqual({ url: FE_URL });
-			});
-		});
-
-		describe('when the state parameter is invalid', () => {
-			it('should throw BadRequestException', () => {
-				jest.spyOn(registrationService, 'fetchStateData')
-					.mockImplementation(() => null);
-				expect(() => controller.register(mock_state)).toThrow(BadRequestException);
+				jest.spyOn(authService, 'get42AccessToken')
+					.mockImplementation(() => Promise.resolve(mock_ft_auth));
+				jest.spyOn(authService, 'get42User')
+					.mockImplementation(() => Promise.resolve(null));
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(InternalServerErrorException);
 			});
 		});
 	});

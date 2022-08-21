@@ -1,10 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { StateData } from '../auth/interfaces/state-data.interface';
+import { StateData, StateDataFields } from '../auth/interfaces/state-data.interface';
 import * as crypto from "crypto";
+import configuration from '../conf/configuration';
+
+const SERVICES: { name: string, fields: StateDataFields[], url: (state: string) => string }[] = [
+	{
+		name: '42',
+		fields: ['ft_id', 'ft_login'],
+		url: configuration().ft.authorization_url,
+	},
+	{
+		name: 'Discord',
+		fields: ['discord_id'],
+		url: configuration().discord.authorization_url,
+	},
+];
 
 @Injectable()
 export class RegistrationService {
 	private states: StateData[] = [];
+
+	/**
+	 *	Get the URL of the next service to ask for an access token.
+	 *	@param {StateData} data The actual data related to a registration process.
+	 *	@return {string} The URL.
+	 */
+	getNextServiceURL(data: StateData): string {
+		const redirect = SERVICES.find(service => !service.fields.every(field => data[field] !== null));
+		if (redirect !== undefined) return redirect.url(data.state);
+		return configuration().front_end.url;
+	}
 
 	/**
 	 *	Fetch the data associated to a state.

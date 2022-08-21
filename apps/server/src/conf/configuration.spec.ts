@@ -37,10 +37,6 @@ describe('42', () => {
 			expect(configuration().ft.authorization_url()).toContain(`client_id=${process.env.FT_CLIENT_ID}`);
 		});
 
-		it('should contain the client secret', () => {
-			expect(configuration().ft.authorization_url()).toContain(`client_secret=${process.env.FT_CLIENT_SECRET}`);
-		});
-
 		it('should contain the state', () => {
 			expect(configuration().ft.authorization_url(mock_state)).toContain(`state=${mock_state}`);
 		});
