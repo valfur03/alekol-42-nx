@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { StateData, StateDataFields } from '../auth/interfaces/state-data.interface';
 import * as crypto from "crypto";
+
 import configuration from '../conf/configuration';
 
 const SERVICES: { name: string, fields: StateDataFields[], url: (state: string) => string }[] = [
@@ -28,7 +29,7 @@ export class RegistrationService {
 	getNextServiceURL(data: StateData): string {
 		const redirect = SERVICES.find(service => !service.fields.every(field => data[field] !== null));
 		if (redirect !== undefined) return redirect.url(data.state);
-		return configuration().front_end.url;
+		return configuration().redirect_uri + '/register';
 	}
 
 	/**

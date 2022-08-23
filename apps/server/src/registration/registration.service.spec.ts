@@ -12,6 +12,7 @@ const mock_discord_guilds_id: string[] = [
 	faker.random.numeric(18),
 ];
 
+process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18);
 process.env.FRONT_END_URL = faker.internet.url();
 process.env.FT_CLIENT_ID = faker.random.numeric(30);
@@ -87,7 +88,7 @@ describe('RegistrationService', () => {
 					discord_guilds_id: mock_discord_guilds_id,
 				};
 				const ret = service.getNextServiceURL(mock_state_data);
-				expect(ret).toBe(configuration().front_end.url);
+				expect(ret).toBe(configuration().redirect_uri + '/register');
 			});
 		});
 	});
