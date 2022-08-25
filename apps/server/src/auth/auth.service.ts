@@ -26,11 +26,14 @@ export class AuthService {
 			method: 'POST',
 			body,
 		})
-			.then((response) => {
-				if (!response.ok) return null;
+			.then(async (response) => {
+				if (!response.ok) throw await response.json();
 				return response.json()
 			})
-			.catch(console.error);
+			.catch((error) => {
+				console.error(error);
+				return null;
+			});
 	}
 
 	async get42AccessToken(code: string) {
