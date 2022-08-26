@@ -19,17 +19,28 @@ const SERVICES: { name: string, fields: StateDataFields[], url: (state: string) 
 
 @Injectable()
 export class RegistrationService {
-	private states: StateData[] = [];
+	private states: { [key: string]: StateData } = {};
 
 	/**
-	 *	Get the URL of the next service to ask for an access token.
+	 *	Returns whether the all the fields have been set.
 	 *	@param {StateData} data The actual data related to a registration process.
 	 *	@return {string} The URL.
 	 */
-	getNextServiceURL(data: StateData): string {
+	hasAllFields(data: StateData) : boolean {
+		return SERVICES.every(service => service.fields.every(field => data[field] !== null));
+	}
+
+	/**
+	 *	Get the URL of the next service to ask for an access token.
+	 *	Returns the front-end's URL if no data are provided.
+	 *	@param {StateData | null} data The actual data related to a registration process.
+	 *	@return {string} The URL.
+	 */
+	getNextServiceURL(data: StateData | null): string {
+		if (data === null) return configuration().front_end.url;
 		const redirect = SERVICES.find(service => !service.fields.every(field => data[field] !== null));
 		if (redirect !== undefined) return redirect.url(data.state);
-		return configuration().redirect_uri + '/register';
+		return configuration().redirect_uri + '/register?state=' + data.state;
 	}
 
 	/**
@@ -38,7 +49,7 @@ export class RegistrationService {
 	 *	@return {StateData | null} The data associated to a state, or null if it does not exist.
 	 */
 	fetchStateData(state: string): StateData | null {
-		return this.states.find(data => data.state === state) || null;
+		return this.states[state] || null;
 	}
 
 	/**
@@ -48,7 +59,19 @@ export class RegistrationService {
 	 */
 	setStateData(data: StateData): StateData | null {
 		if (this.fetchStateData(data.state) !== null) return null;
-		this.states.push(data);
+		this.states[data.state] = data;
+		return data;
+	}
+
+	/**
+	 *	Update data associated to a state.
+	 *	@param {StateData} data The data to set to a state.
+	 *	@return {StateData | null} The inserted data, or null if it already exists.
+	 */
+	updateStateData(data: StateData): StateData | null {
+		let saved_data = this.fetchStateData(data.state)
+		if (saved_data === null) return null;
+		this.states[data.state] = data;
 		return data;
 	}
 
@@ -72,6 +95,6 @@ export class RegistrationService {
 	 *	@param {string} state The state to delete.
 	 */
 	deleteStateData(state: string) {
-		this.states = this.states.filter(data => data.state != state);
+		delete this.states[state];
 	}
 }

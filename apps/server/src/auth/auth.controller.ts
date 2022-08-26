@@ -35,6 +35,9 @@ export class AuthController {
 			// fetch the state's associated data
 			data = this.registrationService.fetchStateData(state);
 			if (data === null) throw new BadRequestException();
+			if (this.registrationService.hasAllFields(data)) {
+				return { url: this.registrationService.getNextServiceURL(null) };
+			}
 		} else {
 			// generates a new state
 			// protect from timeouts with the MAX_ITERATIONS constant

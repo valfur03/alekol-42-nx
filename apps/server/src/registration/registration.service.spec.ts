@@ -35,6 +35,64 @@ describe('RegistrationService', () => {
 		expect(service).toBeDefined();
 	});
 
+	describe('hasAllFields(data)', () => {
+		describe('when ft_id is null', () => {
+			it('should return false', () => {
+				const mock_state_data = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: mock_ft_login,
+					discord_id: mock_discord_id,
+					discord_guilds_id: mock_discord_guilds_id,
+				};
+				const ret = service.hasAllFields(mock_state_data);
+				expect(ret).toBe(false);
+			});
+		});
+
+		describe('when ft_login is null', () => {
+			it('should return false', () => {
+				const mock_state_data = {
+					state: mock_state,
+					ft_id: mock_ft_id,
+					ft_login: null,
+					discord_id: mock_discord_id,
+					discord_guilds_id: mock_discord_guilds_id,
+				};
+				const ret = service.hasAllFields(mock_state_data);
+				expect(ret).toBe(false);
+			});
+		});
+
+		describe('when discord_id is null', () => {
+			it('should return false', () => {
+				const mock_state_data = {
+					state: mock_state,
+					ft_id: mock_ft_id,
+					ft_login: null,
+					discord_id: mock_discord_id,
+					discord_guilds_id: mock_discord_guilds_id,
+				};
+				const ret = service.hasAllFields(mock_state_data);
+				expect(ret).toBe(false);
+			});
+		});
+
+		describe('when everything is set', () => {
+			it('should return true', () => {
+				const mock_state_data = {
+					state: mock_state,
+					ft_id: mock_ft_id,
+					ft_login: mock_ft_login,
+					discord_id: mock_discord_id,
+					discord_guilds_id: mock_discord_guilds_id,
+				};
+				const ret = service.hasAllFields(mock_state_data);
+				expect(ret).toBe(true);
+			});
+		});
+	});
+
 	describe('getNextServiceURL(data)', () => {
 		describe('when only the ft_id is null', () => {
 			it('should redirect to 42', () => {
@@ -88,7 +146,7 @@ describe('RegistrationService', () => {
 					discord_guilds_id: mock_discord_guilds_id,
 				};
 				const ret = service.getNextServiceURL(mock_state_data);
-				expect(ret).toBe(configuration().redirect_uri + '/register');
+				expect(ret).toBe(configuration().redirect_uri + '/register?state=' + mock_state);
 			});
 		});
 	});

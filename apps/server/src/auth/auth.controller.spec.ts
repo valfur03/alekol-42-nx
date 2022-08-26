@@ -23,6 +23,7 @@ const mock_ft_user: { id: number, login: string } = {
 };
 const mock_code = faker.random.alphaNumeric(30);
 const mock_ft_redirection_url: string = faker.internet.url();
+const mock_front_end_url: string = faker.internet.url();
 
 const DISCORD_URL = configuration().discord.authorization_url;
 const FE_URL = configuration().front_end.url;
@@ -115,6 +116,22 @@ describe('AuthController', () => {
 				expect(spy).toHaveBeenCalledWith(mock_state);
 			});
 
+			it('should call the hasAllFields function', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'hasAllFields')
+					.mockImplementation(() => false);
+				controller.register(mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+			});
+
 			it('should call the getNextServiceURL function', async () => {
 				let mock_state_data: StateData = {
 					state: mock_state,
@@ -125,11 +142,33 @@ describe('AuthController', () => {
 				};
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
+				jest.spyOn(registrationService, 'hasAllFields')
+					.mockImplementation(() => false);
 				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
 					.mockImplementation(() => mock_ft_redirection_url);
 				const ret = controller.register(mock_state);
 				expect(spy).toHaveBeenCalledWith(mock_state_data);
 				expect(ret).toStrictEqual({ url: mock_ft_redirection_url });
+			});
+		});
+
+		describe('when all fields are provided', () => {
+			it('should redirect to front-end', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: mock_ft_id,
+					ft_login: mock_ft_login,
+					discord_id: mock_discord_id,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(registrationService, 'hasAllFields')
+					.mockImplementation(() => true);
+				jest.spyOn(registrationService, 'getNextServiceURL')
+					.mockImplementation(() => mock_front_end_url);
+				const ret = controller.register(mock_state);
+				expect(ret).toStrictEqual({ url: mock_front_end_url });
 			});
 		});
 
