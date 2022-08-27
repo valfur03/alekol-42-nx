@@ -1,5 +1,6 @@
 const {
 	DISCORD_CLIENT_ID,
+	DISCORD_CLIENT_SECRET,
 	FRONT_END_URL,
 	FT_CLIENT_ID,
 	FT_CLIENT_SECRET,
@@ -9,7 +10,9 @@ const {
 export default () => ({
 	redirect_uri: REDIRECT_URI,
 	discord: {
-		authorization_url: (state?: string) => `https://discord.com/api/oauth2/authorize?response_type=code&client_id=${DISCORD_CLIENT_ID}&scope=&redirect_uri=${REDIRECT_URI}${state ? `&state=${state}` : ''}`,
+		authorization_url: (state?: string) => `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURI(REDIRECT_URI + '/discord')}&response_type=code&scope=identify${state ? `&state=${state}` : ''}`,
+		client_id: DISCORD_CLIENT_ID,
+		client_secret: DISCORD_CLIENT_SECRET,
 	},
 	front_end: {
 		url: FRONT_END_URL,

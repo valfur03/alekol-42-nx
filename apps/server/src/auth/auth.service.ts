@@ -57,4 +57,26 @@ export class AuthService {
 			})
 			.catch(console.error);
 	}
+
+	async getDiscordAccessToken(code: string) {
+		return this.authorizationCodeGrant('https://discord.com/api/v10/oauth2/token', {
+			client_id: configuration().discord.client_id,
+			client_secret: configuration().discord.client_secret,
+			code,
+			redirect_uri: configuration().redirect_uri + '/discord',
+		});
+	}
+
+	async getDiscordUser(access_token: string): Promise<FtUser> {
+		return fetch('https://discord.com/api/users/@me', {
+			headers: {
+				Authorization: 'Bearer ' + access_token,
+			}
+		})
+			.then((response) => {
+				if (!response.ok) return null;
+				return response.json();
+			})
+			.catch(console.error);
+	}
 }
