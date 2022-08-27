@@ -199,7 +199,7 @@ describe('AuthController', () => {
 					.mockImplementation(() => Promise.resolve(mock_ft_user));
 				mock_state_data.ft_id = mock_ft_id;
 				mock_state_data.ft_login = mock_ft_login;
-				const spy = jest.spyOn(registrationService, 'setStateData')
+				const spy = jest.spyOn(registrationService, 'updateStateData')
 					.mockImplementation(() => mock_state_data);
 				await controller.authWith42(mock_code, mock_state);
 				expect(spy).toHaveBeenCalledWith(mock_state_data);
