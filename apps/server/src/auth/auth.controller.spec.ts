@@ -235,7 +235,7 @@ describe('AuthController', () => {
 			it('should throw BadRequestException', async () => {
 				jest.spyOn(registrationService, 'fetchStateData')
 					.mockImplementation(() => null);
-				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(BadRequestException);
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(new BadRequestException('State is invalid'));
 			});
 		});
 
@@ -252,7 +252,7 @@ describe('AuthController', () => {
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'get42AccessToken')
 					.mockImplementation(() => Promise.resolve(null));
-				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(InternalServerErrorException);
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(new InternalServerErrorException('The code seems to be invalid...'));
 			});
 		});
 
@@ -271,7 +271,7 @@ describe('AuthController', () => {
 					.mockImplementation(() => Promise.resolve(mock_ft_auth));
 				jest.spyOn(authService, 'get42User')
 					.mockImplementation(() => Promise.resolve(null));
-				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(InternalServerErrorException);
+				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(new InternalServerErrorException('The access token seems to be invalid...'));
 			});
 		});
 	});
