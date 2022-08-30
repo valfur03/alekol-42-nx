@@ -90,13 +90,12 @@ export class AuthController {
 	@Redirect()
 	async authWithDiscord(@Query('code') code: string, @Query('state') state: string): Promise<NestRedirection> {
 		let data: StateData = this.registrationService.fetchStateData(state);
-		console.log(data);
 		if (data === null) throw new BadRequestException('State is invalid');
 		const auth = await this.authService.getDiscordAccessToken(code);
 		if (auth === null) throw new InternalServerErrorException('The code seems to be invalid...');
 		const user = await this.authService.getDiscordUser(auth.access_token);
 		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
-		data = this.registrationService.updateStateData({ ...data, discord_id: user.id.toString() });
+		data = this.registrationService.updateStateData({ ...data, discord_id: user.id });
 		return { url: this.registrationService.getNextServiceURL(data) };
 	}
 }

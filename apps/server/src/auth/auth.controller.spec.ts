@@ -17,12 +17,19 @@ const mock_discord_id: string = faker.random.numeric(18);
 const mock_ft_auth: { access_token: string } = {
 	access_token: faker.random.alphaNumeric(30),
 };
+const mock_discord_auth: { access_token: string } = {
+	access_token: faker.random.alphaNumeric(30),
+};
 const mock_ft_user: { id: number, login: string } = {
 	id: parseInt(mock_ft_id),
 	login: mock_ft_login,
 };
+const mock_discord_user: { id: string } = {
+	id: mock_discord_id,
+};
 const mock_code = faker.random.alphaNumeric(30);
 const mock_ft_redirection_url: string = faker.internet.url();
+const mock_discord_redirection_url: string = faker.internet.url();
 const mock_front_end_url: string = faker.internet.url();
 
 const DISCORD_URL = configuration().discord.authorization_url;
@@ -272,6 +279,99 @@ describe('AuthController', () => {
 				jest.spyOn(authService, 'get42User')
 					.mockImplementation(() => Promise.resolve(null));
 				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(new InternalServerErrorException('The access token seems to be invalid...'));
+			});
+		});
+	});
+
+	describe('authWithDiscord', () => {
+		describe('when everything is ok', () => {
+			it('should set the new state data', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'getDiscordAccessToken')
+					.mockImplementation(() => Promise.resolve(mock_discord_auth));
+				jest.spyOn(authService, 'getDiscordUser')
+					.mockImplementation(() => Promise.resolve(mock_discord_user));
+				mock_state_data.discord_id = mock_discord_id;
+				const spy = jest.spyOn(registrationService, 'updateStateData')
+					.mockImplementation(() => mock_state_data);
+				await controller.authWithDiscord(mock_code, mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+			});
+
+			it('should call the getNextServiceURL function', async () => {
+				let mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'getDiscordAccessToken')
+					.mockImplementation(() => Promise.resolve(mock_discord_auth));
+				jest.spyOn(authService, 'getDiscordUser')
+					.mockImplementation(() => Promise.resolve(mock_discord_user));
+				mock_state_data.discord_id = mock_discord_id;
+				jest.spyOn(registrationService, 'setStateData')
+					.mockImplementation(() => mock_state_data);
+				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
+					.mockImplementation(() => mock_discord_redirection_url);
+				const ret = await controller.authWithDiscord(mock_code, mock_state);
+				expect(spy).toHaveBeenCalledWith(mock_state_data);
+				expect(ret).toStrictEqual({ url: mock_discord_redirection_url });
+			});
+		});
+
+		describe('when the state parameter is invalid', () => {
+			it('should throw BadRequestException', async () => {
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => null);
+				await expect(() => controller.authWithDiscord(mock_code, mock_state)).rejects.toThrow(new BadRequestException('State is invalid'));
+			});
+		});
+
+		describe('when the access token request fails', () => {
+			it('should throw InternalServerErrorException', async () => {
+				const mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'getDiscordAccessToken')
+					.mockImplementation(() => Promise.resolve(null));
+				await expect(() => controller.authWithDiscord(mock_code, mock_state)).rejects.toThrow(new InternalServerErrorException('The code seems to be invalid...'));
+			});
+		});
+
+		describe('when the user\'s data request fails', () => {
+			it('should throw InternalServerErrorException', async () => {
+				const mock_state_data: StateData = {
+					state: mock_state,
+					ft_id: null,
+					ft_login: null,
+					discord_id: null,
+					discord_guilds_id: [],
+				};
+				jest.spyOn(registrationService, 'fetchStateData')
+					.mockImplementation(() => mock_state_data);
+				jest.spyOn(authService, 'getDiscordAccessToken')
+					.mockImplementation(() => Promise.resolve(mock_discord_auth));
+				jest.spyOn(authService, 'getDiscordUser')
+					.mockImplementation(() => Promise.resolve(null));
+				await expect(() => controller.authWithDiscord(mock_code, mock_state)).rejects.toThrow(new InternalServerErrorException('The access token seems to be invalid...'));
 			});
 		});
 	});

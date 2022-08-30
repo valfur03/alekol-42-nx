@@ -13,6 +13,10 @@ interface FtUser {
 	login: string;
 }
 
+interface DiscordUser {
+	id: string;
+}
+
 @Injectable()
 export class AuthService {
 	private async authorizationCodeGrant(url: string, { client_id, client_secret, code, redirect_uri }: AuthorizationCodeGrantFlowData) {
@@ -67,7 +71,7 @@ export class AuthService {
 		});
 	}
 
-	async getDiscordUser(access_token: string): Promise<FtUser> {
+	async getDiscordUser(access_token: string): Promise<DiscordUser> {
 		return fetch('https://discord.com/api/users/@me', {
 			headers: {
 				Authorization: 'Bearer ' + access_token,
