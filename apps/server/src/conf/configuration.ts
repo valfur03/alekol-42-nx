@@ -1,3 +1,23 @@
+import { Logger } from '@nestjs/common';
+import * as Joi from 'joi';
+
+const schema = Joi.object({
+	DISCORD_CLIENT_ID: Joi.string().required(),
+	DISCORD_CLIENT_SECRET: Joi.string().required(),
+	FRONT_END_URL: Joi.string().required(),
+	FT_CLIENT_ID: Joi.string().required(),
+	FT_CLIENT_SECRET: Joi.string().required(),
+	REDIRECT_URI: Joi.string().required(),
+}).unknown();
+
+const { error } = schema.validate(process.env, {
+	abortEarly: false,
+});
+if (error) {
+	Logger.error(error);
+	process.exit(1);
+}
+
 const {
 	DISCORD_CLIENT_ID,
 	DISCORD_CLIENT_SECRET,
