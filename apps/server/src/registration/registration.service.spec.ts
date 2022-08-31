@@ -14,6 +14,7 @@ const mock_discord_guilds_id: string[] = [
 
 process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18);
+process.env.DISCORD_CLIENT_SECRET = faker.random.numeric(18);
 process.env.FRONT_END_URL = faker.internet.url();
 process.env.FT_CLIENT_ID = faker.random.numeric(30);
 process.env.FT_CLIENT_SECRET = faker.random.numeric(30);

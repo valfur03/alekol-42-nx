@@ -10,7 +10,7 @@ const schema = Joi.object({
 	REDIRECT_URI: Joi.string().required(),
 }).unknown();
 
-const { error } = schema.validate(process.env, {
+const { value, error } = schema.validate(process.env, {
 	abortEarly: false,
 });
 if (error) {
@@ -25,7 +25,7 @@ const {
 	FT_CLIENT_ID,
 	FT_CLIENT_SECRET,
 	REDIRECT_URI
-} = process.env;
+} = value;
 
 export default () => ({
 	redirect_uri: REDIRECT_URI,
