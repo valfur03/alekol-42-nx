@@ -26,6 +26,7 @@ export class AuthController {
 	 * @return {NestRedirection} The URL to the next service.
 	 * @throws {BadRequestException} The state must exist in the database if provided.
 	 * @throws {GatewayTimeoutException} The state cannot be a duplicate.
+	 * @todo add the finale user to the database.
 	 */
 	@Get('register')
 	@Redirect()
@@ -71,6 +72,30 @@ export class AuthController {
 		const user = await this.authService.get42User(auth.access_token);
 		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
 		data = this.registrationService.updateStateData({ ...data, ft_id: user.id.toString(), ft_login: user.login })
+		return { url: this.registrationService.getNextServiceURL(data) };
+	}
+
+	/**
+	 * GET /discord
+	 * Authenticate the user with the authorization code and save his id.
+	 * @param {string} code The Discord's authorization code.
+	 * @param {string} state The state of the authentication process.
+	 * @return {Promise<NestRedirection>} The URL to the next service.
+	 * @throws {BadRequestException} The state must exist in the database.
+	 * @throws {InternalServerErrorException} Discord could not issue an access token using the code.
+	 * @throws {InternalServerErrorException} Discord could not give information about the access token's owner.
+	 * @todo possible security issue: prevent setting id again with a second request.
+	 */
+	@Get('discord')
+	@Redirect()
+	async authWithDiscord(@Query('code') code: string, @Query('state') state: string): Promise<NestRedirection> {
+		let data: StateData = this.registrationService.fetchStateData(state);
+		if (data === null) throw new BadRequestException('State is invalid');
+		const auth = await this.authService.getDiscordAccessToken(code);
+		if (auth === null) throw new InternalServerErrorException('The code seems to be invalid...');
+		const user = await this.authService.getDiscordUser(auth.access_token);
+		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
+		data = this.registrationService.updateStateData({ ...data, discord_id: user.id });
 		return { url: this.registrationService.getNextServiceURL(data) };
 	}
 }
