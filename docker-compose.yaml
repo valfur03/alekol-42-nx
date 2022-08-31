@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    networks:
+      - backend
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: alekol
+      POSTGRES_USER: alekol
+      POSTGRES_PASSWORD: password
+    networks:
+      - backend
+
+networks:
+  backend:
