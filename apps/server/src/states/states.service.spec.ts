@@ -77,10 +77,6 @@ describe('StatesService', () => {
 		it('should return null', () => {
 			expect(service.fetchStateData(mock_state)).toBeNull();
 		});
-
-		//		it('should fetch from the database', () => {
-		//			service.fetchStateData(mock_state);
-		//		})
 	});
 
 	describe('setStateData(state)', () => {
@@ -148,7 +144,7 @@ describe('StatesService', () => {
 			expect(ret).toHaveProperty('discord_id', null);
 			expect(ret).toHaveProperty('discord_guilds_id', []);
 		});
-	})
+	});
 
 	describe('deleteStateData', () => {
 		it('should delete only the state\'s data', () => {

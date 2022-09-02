@@ -7,7 +7,7 @@ process.env.FRONT_END_URL = faker.internet.url();
 process.env.FT_CLIENT_ID = faker.random.numeric(30);
 process.env.FT_CLIENT_SECRET = faker.random.numeric(30);
 process.env.REDIRECT_URI = faker.internet.url();
-import configuration from "./configuration";
+import configuration from './configuration';
 
 const mock_state = faker.random.alphaNumeric(30);
 

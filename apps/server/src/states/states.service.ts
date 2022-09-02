@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as crypto from "crypto";
+import * as crypto from 'crypto';
 import { StateData } from '../auth/interfaces/state-data.interface';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class StatesService {
 	 *	@return {StateData | null} The inserted data, or null if it already exists.
 	 */
 	updateStateData(data: StateData): StateData | null {
-		let saved_data = this.fetchStateData(data.state)
+		const saved_data = this.fetchStateData(data.state);
 		if (saved_data === null) return null;
 		this.states[data.state] = data;
 		return data;
@@ -44,7 +44,7 @@ export class StatesService {
 	 */
 	initStateData(): StateData {
 		const data: StateData = {
-			state: crypto.randomBytes(16).toString("hex"),
+			state: crypto.randomBytes(16).toString('hex'),
 			ft_id: null,
 			ft_login: null,
 			discord_id: null,

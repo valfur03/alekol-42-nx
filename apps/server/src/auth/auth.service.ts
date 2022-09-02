@@ -32,7 +32,7 @@ export class AuthService {
 		})
 			.then(async (response) => {
 				if (!response.ok) throw await response.json();
-				return response.json()
+				return response.json();
 			})
 			.catch((error) => {
 				console.error(error);
@@ -53,7 +53,7 @@ export class AuthService {
 		return fetch('https://api.intra.42.fr/v2/me', {
 			headers: {
 				Authorization: 'Bearer ' + access_token,
-			}
+			},
 		})
 			.then((response) => {
 				if (!response.ok) return null;
@@ -75,7 +75,7 @@ export class AuthService {
 		return fetch('https://discord.com/api/users/@me', {
 			headers: {
 				Authorization: 'Bearer ' + access_token,
-			}
+			},
 		})
 			.then((response) => {
 				if (!response.ok) return null;

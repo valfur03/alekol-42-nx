@@ -24,7 +24,7 @@ const {
 	FRONT_END_URL,
 	FT_CLIENT_ID,
 	FT_CLIENT_SECRET,
-	REDIRECT_URI
+	REDIRECT_URI,
 } = value;
 
 export default () => ({

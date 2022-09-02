@@ -72,7 +72,7 @@ export class AuthController {
 		if (auth === null) throw new InternalServerErrorException('The code seems to be invalid...');
 		const user = await this.authService.get42User(auth.access_token);
 		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
-		data = this.statesService.updateStateData({ ...data, ft_id: user.id.toString(), ft_login: user.login })
+		data = this.statesService.updateStateData({ ...data, ft_id: user.id.toString(), ft_login: user.login });
 		return { url: this.registrationService.getNextServiceURL(data) };
 	}
 

@@ -6,10 +6,7 @@ import { RegistrationService } from '../registration/registration.service';
 import { StateData } from './interfaces/state-data.interface';
 import { StatesService } from '../states/states.service';
 
-process.env.REDIRECT_URI = faker.internet.url();
-process.env.DISCORD_CLIENT_ID = faker.random.numeric(18)
-import configuration from '../conf/configuration';
-import {BadRequestException, GatewayTimeoutException, InternalServerErrorException} from '@nestjs/common';
+import { BadRequestException, GatewayTimeoutException, InternalServerErrorException } from '@nestjs/common';
 
 const mock_state = faker.random.alphaNumeric(30);
 const mock_ft_id: string = faker.random.numeric(5);
@@ -32,10 +29,6 @@ const mock_code = faker.random.alphaNumeric(30);
 const mock_ft_redirection_url: string = faker.internet.url();
 const mock_discord_redirection_url: string = faker.internet.url();
 const mock_front_end_url: string = faker.internet.url();
-
-const DISCORD_URL = configuration().discord.authorization_url;
-const FE_URL = configuration().front_end.url;
-const FT_URL = configuration().ft.authorization_url;
 
 describe('AuthController', () => {
 	let controller: AuthController;
@@ -109,7 +102,7 @@ describe('AuthController', () => {
 				expect(() => controller.register(undefined)).toThrow(GatewayTimeoutException);
 				expect(spy).toHaveBeenCalledTimes(20);
 			});
-		})
+		});
 
 		describe('when the state parameter is provided', () => {
 			it('should fetch the state data', () => {
@@ -127,7 +120,7 @@ describe('AuthController', () => {
 			});
 
 			it('should call the hasAllFields function', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
@@ -143,7 +136,7 @@ describe('AuthController', () => {
 			});
 
 			it('should call the getNextServiceURL function', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
@@ -164,7 +157,7 @@ describe('AuthController', () => {
 
 		describe('when all fields are provided', () => {
 			it('should redirect to front-end', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: mock_ft_id,
 					ft_login: mock_ft_login,
@@ -194,7 +187,7 @@ describe('AuthController', () => {
 	describe('authWith42', () => {
 		describe('when everything is ok', () => {
 			it('should set the new state data', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
@@ -216,7 +209,7 @@ describe('AuthController', () => {
 			});
 
 			it('should call the getNextServiceURL function', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
@@ -289,7 +282,7 @@ describe('AuthController', () => {
 	describe('authWithDiscord', () => {
 		describe('when everything is ok', () => {
 			it('should set the new state data', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
@@ -310,7 +303,7 @@ describe('AuthController', () => {
 			});
 
 			it('should call the getNextServiceURL function', async () => {
-				let mock_state_data: StateData = {
+				const mock_state_data: StateData = {
 					state: mock_state,
 					ft_id: null,
 					ft_login: null,
