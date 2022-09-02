@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegistrationService } from '../registration/registration.service';
 import { StateData } from './interfaces/state-data.interface';
+import { StatesService } from '../states/states.service';
 
 process.env.REDIRECT_URI = faker.internet.url();
 process.env.DISCORD_CLIENT_ID = faker.random.numeric(18)
@@ -40,13 +41,15 @@ describe('AuthController', () => {
 	let controller: AuthController;
 	let authService: AuthService;
 	let registrationService: RegistrationService;
+	let statesService: StatesService;
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [AuthController],
-			providers: [AuthService, RegistrationService],
+			providers: [AuthService, RegistrationService, StatesService],
 		}).compile();
 
+		statesService = module.get<StatesService>(StatesService);
 		registrationService = module.get<RegistrationService>(RegistrationService);
 		authService = module.get<AuthService>(AuthService);
 		controller = module.get<AuthController>(AuthController);
@@ -66,9 +69,9 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'initStateData')
+				jest.spyOn(statesService, 'initStateData')
 					.mockImplementation(() => mock_state_data);
-				const spy = jest.spyOn(registrationService, 'setStateData')
+				const spy = jest.spyOn(statesService, 'setStateData')
 					.mockImplementation(() => mock_state_data);
 				controller.register(undefined);
 				expect(spy).toHaveBeenCalledWith(mock_state_data);
@@ -82,9 +85,9 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'initStateData')
+				jest.spyOn(statesService, 'initStateData')
 					.mockImplementation(() => mock_state_data);
-				const spy = jest.spyOn(registrationService, 'setStateData')
+				const spy = jest.spyOn(statesService, 'setStateData')
 					.mockImplementation(() => mock_state_data)
 					.mockImplementationOnce(() => null);
 				controller.register(undefined);
@@ -99,9 +102,9 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'initStateData')
+				jest.spyOn(statesService, 'initStateData')
 					.mockImplementation(() => mock_state_data);
-				const spy = jest.spyOn(registrationService, 'setStateData')
+				const spy = jest.spyOn(statesService, 'setStateData')
 					.mockImplementation(() => null);
 				expect(() => controller.register(undefined)).toThrow(GatewayTimeoutException);
 				expect(spy).toHaveBeenCalledTimes(20);
@@ -117,7 +120,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				const spy = jest.spyOn(registrationService, 'fetchStateData')
+				const spy = jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				controller.register(mock_state);
 				expect(spy).toHaveBeenCalledWith(mock_state);
@@ -131,7 +134,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				const spy = jest.spyOn(registrationService, 'hasAllFields')
 					.mockImplementation(() => false);
@@ -147,7 +150,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(registrationService, 'hasAllFields')
 					.mockImplementation(() => false);
@@ -168,7 +171,7 @@ describe('AuthController', () => {
 					discord_id: mock_discord_id,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(registrationService, 'hasAllFields')
 					.mockImplementation(() => true);
@@ -181,7 +184,7 @@ describe('AuthController', () => {
 
 		describe('when the state parameter is invalid', () => {
 			it('should throw BadRequestException', () => {
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => null);
 				expect(() => controller.register(mock_state)).toThrow(BadRequestException);
 			});
@@ -198,7 +201,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'get42AccessToken')
 					.mockImplementation(() => Promise.resolve(mock_ft_auth));
@@ -206,7 +209,7 @@ describe('AuthController', () => {
 					.mockImplementation(() => Promise.resolve(mock_ft_user));
 				mock_state_data.ft_id = mock_ft_id;
 				mock_state_data.ft_login = mock_ft_login;
-				const spy = jest.spyOn(registrationService, 'updateStateData')
+				const spy = jest.spyOn(statesService, 'updateStateData')
 					.mockImplementation(() => mock_state_data);
 				await controller.authWith42(mock_code, mock_state);
 				expect(spy).toHaveBeenCalledWith(mock_state_data);
@@ -220,7 +223,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'get42AccessToken')
 					.mockImplementation(() => Promise.resolve(mock_ft_auth));
@@ -228,7 +231,7 @@ describe('AuthController', () => {
 					.mockImplementation(() => Promise.resolve(mock_ft_user));
 				mock_state_data.ft_id = mock_ft_id;
 				mock_state_data.ft_login = mock_ft_login;
-				jest.spyOn(registrationService, 'setStateData')
+				jest.spyOn(statesService, 'setStateData')
 					.mockImplementation(() => mock_state_data);
 				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
 					.mockImplementation(() => mock_ft_redirection_url);
@@ -240,7 +243,7 @@ describe('AuthController', () => {
 
 		describe('when the state parameter is invalid', () => {
 			it('should throw BadRequestException', async () => {
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => null);
 				await expect(() => controller.authWith42(mock_code, mock_state)).rejects.toThrow(new BadRequestException('State is invalid'));
 			});
@@ -255,7 +258,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'get42AccessToken')
 					.mockImplementation(() => Promise.resolve(null));
@@ -272,7 +275,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'get42AccessToken')
 					.mockImplementation(() => Promise.resolve(mock_ft_auth));
@@ -293,14 +296,14 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'getDiscordAccessToken')
 					.mockImplementation(() => Promise.resolve(mock_discord_auth));
 				jest.spyOn(authService, 'getDiscordUser')
 					.mockImplementation(() => Promise.resolve(mock_discord_user));
 				mock_state_data.discord_id = mock_discord_id;
-				const spy = jest.spyOn(registrationService, 'updateStateData')
+				const spy = jest.spyOn(statesService, 'updateStateData')
 					.mockImplementation(() => mock_state_data);
 				await controller.authWithDiscord(mock_code, mock_state);
 				expect(spy).toHaveBeenCalledWith(mock_state_data);
@@ -314,14 +317,14 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'getDiscordAccessToken')
 					.mockImplementation(() => Promise.resolve(mock_discord_auth));
 				jest.spyOn(authService, 'getDiscordUser')
 					.mockImplementation(() => Promise.resolve(mock_discord_user));
 				mock_state_data.discord_id = mock_discord_id;
-				jest.spyOn(registrationService, 'setStateData')
+				jest.spyOn(statesService, 'setStateData')
 					.mockImplementation(() => mock_state_data);
 				const spy = jest.spyOn(registrationService, 'getNextServiceURL')
 					.mockImplementation(() => mock_discord_redirection_url);
@@ -333,7 +336,7 @@ describe('AuthController', () => {
 
 		describe('when the state parameter is invalid', () => {
 			it('should throw BadRequestException', async () => {
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => null);
 				await expect(() => controller.authWithDiscord(mock_code, mock_state)).rejects.toThrow(new BadRequestException('State is invalid'));
 			});
@@ -348,7 +351,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'getDiscordAccessToken')
 					.mockImplementation(() => Promise.resolve(null));
@@ -365,7 +368,7 @@ describe('AuthController', () => {
 					discord_id: null,
 					discord_guilds_id: [],
 				};
-				jest.spyOn(registrationService, 'fetchStateData')
+				jest.spyOn(statesService, 'fetchStateData')
 					.mockImplementation(() => mock_state_data);
 				jest.spyOn(authService, 'getDiscordAccessToken')
 					.mockImplementation(() => Promise.resolve(mock_discord_auth));

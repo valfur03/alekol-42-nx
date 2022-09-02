@@ -3,6 +3,7 @@ import { RegistrationService } from '../registration/registration.service';
 import { AuthService } from './auth.service';
 import { StateData } from './interfaces/state-data.interface';
 import { NestRedirection } from '@alekol/data';
+import { StatesService } from '../states/states.service';
 
 /**
  * The maximum number of iterations to generate a state.
@@ -16,7 +17,7 @@ const MAX_ITERATIONS = 20;
  */
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService, private registrationService: RegistrationService) {}
+	constructor(private authService: AuthService, private registrationService: RegistrationService, private statesService: StatesService) {}
 
 	/**
 	 * GET /register
@@ -34,7 +35,7 @@ export class AuthController {
 		let data: StateData | null = null;
 		if (state) {
 			// fetch the state's associated data
-			data = this.registrationService.fetchStateData(state);
+			data = this.statesService.fetchStateData(state);
 			if (data === null) throw new BadRequestException();
 			if (this.registrationService.hasAllFields(data)) {
 				return { url: this.registrationService.getNextServiceURL(null) };
@@ -45,7 +46,7 @@ export class AuthController {
 			let i = 0;
 			while (data === null) {
 				if (i++ >= MAX_ITERATIONS) throw new GatewayTimeoutException();
-				data = this.registrationService.setStateData(this.registrationService.initStateData());
+				data = this.statesService.setStateData(this.statesService.initStateData());
 			}
 		}
 		return { url: this.registrationService.getNextServiceURL(data) };
@@ -65,13 +66,13 @@ export class AuthController {
 	@Get('42')
 	@Redirect()
 	async authWith42(@Query('code') code: string, @Query('state') state: string): Promise<NestRedirection> {
-		let data: StateData = this.registrationService.fetchStateData(state);
+		let data: StateData = this.statesService.fetchStateData(state);
 		if (data === null) throw new BadRequestException('State is invalid');
 		const auth = await this.authService.get42AccessToken(code);
 		if (auth === null) throw new InternalServerErrorException('The code seems to be invalid...');
 		const user = await this.authService.get42User(auth.access_token);
 		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
-		data = this.registrationService.updateStateData({ ...data, ft_id: user.id.toString(), ft_login: user.login })
+		data = this.statesService.updateStateData({ ...data, ft_id: user.id.toString(), ft_login: user.login })
 		return { url: this.registrationService.getNextServiceURL(data) };
 	}
 
@@ -89,13 +90,13 @@ export class AuthController {
 	@Get('discord')
 	@Redirect()
 	async authWithDiscord(@Query('code') code: string, @Query('state') state: string): Promise<NestRedirection> {
-		let data: StateData = this.registrationService.fetchStateData(state);
+		let data: StateData = this.statesService.fetchStateData(state);
 		if (data === null) throw new BadRequestException('State is invalid');
 		const auth = await this.authService.getDiscordAccessToken(code);
 		if (auth === null) throw new InternalServerErrorException('The code seems to be invalid...');
 		const user = await this.authService.getDiscordUser(auth.access_token);
 		if (user === null) throw new InternalServerErrorException('The access token seems to be invalid...');
-		data = this.registrationService.updateStateData({ ...data, discord_id: user.id });
+		data = this.statesService.updateStateData({ ...data, discord_id: user.id });
 		return { url: this.registrationService.getNextServiceURL(data) };
 	}
 }
